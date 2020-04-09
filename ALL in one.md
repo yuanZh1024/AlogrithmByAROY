@@ -1,6 +1,14 @@
 ```cpp
-int n,tot,rt,dis[N],fa[N],h[N],ne[N<<1],to[N<<1],wi[N<<1];
-void addEdge(int u,int v,int w){to[++tot]=v;ne[tot]=h[u];h[u]=tot;wi[tot]=w;}
+#include <bits/stdc++.h>
+using namespace std;
+#define ll long long
+#define MYINTMAX 0x3f3f3f3f
+#define N 100005
+ll n, k[N];
+ll ans, f[N];
+ll n,tot,rt,dis[N],fa[N],h[N],ne[N<<1],p[N<<1],wi[N<<1];
+void addEdge(int u,int v,int w){p[++tot]=v;ne[tot]=h[u];h[u]=tot;wi[tot]=w;}
+void add(int u,int v){p[++tot]=v;ne[tot]=h[u];h[u]=tot;}
 ```
 ## 树的直径
 定义：树的直径，即 树上最远的两点的距离（即 树上最大距离），若树的边权全为1，则树的直径即是**树上的最长链**。  
