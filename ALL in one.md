@@ -1,3 +1,4 @@
+```
 #pragma GCC optimize("O2")
 #pragma GCC optimize("O3")
 #pragma GCC optimize("Ofast")
@@ -45,6 +46,8 @@
 #pragma GCC optimize("-funsafe-loop-optimizations")
 #pragma GCC optimize("inline-functions-called-once")
 #pragma GCC optimize("-fdelete-null-pointer-checks")
+#define rint register int //OI专用
+```
 ```cpp
 #include <bits/stdc++.h>
 using namespace std;
@@ -80,7 +83,8 @@ ans.back().push_back("abc")——向最后一个string向量push一个string
 https://www.cnblogs.com/wangkundentisy/p/9033782.html
 iterator unique(iterator it_1,iterator it_2);
 ## 树状数组
-//简洁树状数组模板
+//简洁树状数组模板  
+```cpp
 for(int pos = nums[i]; pos > 0; pos -= pos&-pos) tmp+=tree[pos];
 for(int pos = nums[i]; pos <= maxNum; pos += pos&-pos) tree[pos]++;
 ////
@@ -126,6 +130,7 @@ inline void update(int pos, int val)
         pos += pos & (-pos);
     }
 }
+```
 ## 树的直径
 定义：树的直径，即 树上最远的两点的距离（即 树上最大距离），若树的边权全为1，则树的直径即是**树上的最长链**。  
 通常有两种树的直径的求法，时间复杂度均为O(n)  
@@ -138,7 +143,7 @@ $d[u]=max(d[v]+w[u][v]),v∈u的子结点$
 int dis[MAXN],maxDia=0;
 int dfs(int u,int father){
     dis[u]=0;
-    for(int i=h[u];i;ne[i])if(p[i]!=father){
+    for(int i=h[u];i;i=ne[i])if(p[i]!=father){
         dfs(p[i],u);
         maxDia=max(maxDia,dis[u]+dis[p[i]]+w[i]);
         dis[u]=max(dis[u],dis[p[i]]+w[i]);
@@ -151,7 +156,7 @@ $dist[i]$：表示i结点到原树根结点的距离
 int dis[MAXN],rt;
 void dfs(int u,int father)
 {
-    if(dis[u]>rt){ rt=u; }
+    if(dis[u]>dis[rt]){ rt=u; }
     for(int i=h[u];i;ne[i])if(p[i]!=father){
         dis[p[i]]=dis[u]+w[i];
         dfs(p[i],u);
