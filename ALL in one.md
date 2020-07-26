@@ -369,6 +369,78 @@ int main(void)
     return 0;
 }
 ```
+int ff[M+5];
+//求最大公因数
+int gcd(int a,int b)
+{
+    if(b==0)
+        return a;
+    else
+        return gcd(b,a%b);
+}
+ 
+//解线性同余方程，扩展欧几里德定理
+int x,y;
+void Extended_gcd(int a,int b)
+{
+    if(b==0)
+    {
+        x=1;
+        y=0;
+    }
+    else
+    {
+        Extended_gcd(b,a%b);
+        long t=x;
+        x=y;
+        y=t-(a/b)*y;
+    }
+}
+ 
+//计算不大的C(n,m)
+int C(int a,int b)
+{
+    if(b>a)
+        return 0;
+    b=(ff[a-b]*ff[b])%M;
+    a=ff[a];
+    int c=gcd(a,b);
+    a/=c;
+    b/=c;
+    Extended_gcd(b,M);
+    x=(x+M)%M;
+    x=(x*a)%M;
+    return x;
+}
+ 
+//Lucas定理
+int Combination(int n, int m)
+{
+    int ans=1;
+    int a,b;
+    while(m||n)
+    {
+        a=n%M;
+        b=m%M;
+        n/=M;
+        m/=M;
+        ans=(ans*C(a,b))%M;
+    }
+    return ans;
+}
+ 
+int main()
+{
+    int i,m,n;
+    ff[0]=1;
+    for(i=1; i<=M; i++) //预计算n!
+        ff[i]=(ff[i-1]*i)%M;
+    while(~scanf("%d%d",&n, &m))
+    {
+        printf("%d\n",Combination(n,m));
+    }
+    return 0;
+}
 ///LCA模板
 例题：https://blog.nowcoder.net/n/6ba3155a4b0f4c519b39774dbe3ceabb
 ```cpp
@@ -491,6 +563,130 @@ int main()
     return 0;
 }
 ```
+
+增加一个比赛时做的题： TreeNode转为图
+```cpp
+#define MAXN 200010
+int p[MAXN], h[MAXN], ne[MAXN]; 
+int num = 0;
+int dep[MAXN / 2], f[MAXN / 2][21];
+int MAXDEPTH;
+//加边
+void addEdge(int from, int to)
+{
+    p[++num] = to; 
+    ne[num] = h[from];
+    h[from] = num;
+ 
+    p[++num] = from;
+    ne[num] = h[to];
+    h[to] = num;
+}
+
+// dfs预处理深度和倍增
+void dfs(int u, int father)
+{
+    dep[u] = dep[father] + 1;
+    for (int i = 1; (1 << i) <= dep[u]; ++i) {
+        f[u][i] = f[f[u][i - 1]][i - 1];
+    }
+    for (int i = h[u]; i; i = ne[i])if (p[i] != father) {
+            f[p[i]][0] = u;
+            dfs(p[i], u);
+        }
+}
+// bfs预处理深度和倍增
+void bfs(int root){
+    f[root][0] = root;
+    dep[root] = 0;
+    queue<int> que;
+    que.push(root);
+    while(!que.empty()){
+        int u = que.front();
+        que.pop();
+        for(int i = 1; i < MAXDEPTH; i++){
+            f[u][i] = f[f[u][i - 1]][i - 1];
+        }
+        for(int i = h[u]; i; i = ne[i]) if(p[i]!=f[u][0]){
+            int v = p[i];
+            dep[v] = dep[u] + 1;
+            f[v][0] = u;
+            que.push(v);
+        }
+    }
+}
+// 求LCA
+int LCA(int u, int v){
+    if(dep[u] > dep[v]) swap(u, v);
+    int hu = dep[u], hv = dep[v];
+    for(int det = hv - hu, i = 0; det; det >>= 1, i++){
+        if(det & 1){ // 深度深的往上跳 直到和深度低的相同深度
+            v = f[v][i];
+        }
+    }
+    if(u == v){
+        return u;
+    }
+    for(int i = MAXDEPTH - 1; i >= 0; i--){
+        if(f[u][i] == f[v][i]) continue;// 同一深度后继续往上跳，但是两者不能相遇（可能是最远祖先，而不是最近祖先）
+        u = f[u][i];
+        v = f[v][i];
+    }
+    return f[u][0];// 无法继续上跳 则为此时x或y的祖先 f[y][0]=f[x][0]
+}
+void init()
+{
+    MAXDEPTH = 20;//2的20次方
+    num = 0;
+    memset(f, 0, sizeof(f));
+    memset(h, 0, sizeof(h));
+    memset(dep, 0, sizeof(dep));
+}
+
+class Solution {
+    vector<int> ye;
+    int idx=2;
+    void dfs0(TreeNode* root){   // TreeNode转为图
+        if(root==NULL) return;
+        if(root->left==NULL && root->right==NULL) ye.push_back(root->val);
+        if(root->left) {
+            root->left->val=idx++;
+            addEdge(root->val,root->left->val);
+        }
+        if(root->right) {
+            root->right->val=idx++;
+            addEdge(root->val,root->right->val);
+        }
+        dfs0(root->left);
+        dfs0(root->right);
+    }
+public:
+    int countPairs(TreeNode* root, int distance) {
+        ye.clear();init();
+        root->val=1;idx=2;
+        
+        dfs0(root);
+        //for(auto x:ye) cout<<x<<endl;
+        int ans=0;
+        dep[0]=-1;
+        dfs(root->val, 0);
+        //bfs(root->val);
+        int t=ye.size();
+        for(int i=0;i<t;++i){
+            for(int j=i+1;j<t;++j){
+                //cout<<LCA(ye[i], ye[j])<<endl;
+                 int dis1 = dep[ye[i]] + dep[ye[j]] - 2 * dep[LCA(ye[i], ye[j])]; 
+                 //printf("i=%d j=%d %d %d dis=%d\n",ye[i],ye[j],dep[ye[i]],dep[ye[j]],dis1);
+                 if(dis1<=distance) ans++;
+            }
+        }
+        return ans;
+
+    }
+};
+```
+
+
 
 ```cpp
 //离散化模板
